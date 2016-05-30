@@ -22,11 +22,22 @@ import nickrout.lenslauncher.model.App;
 public class AppUtil {
 
     private static final String TAG = AppUtil.class.getSimpleName();
+    private static ArrayList<App> mApps;
+
+    public static ArrayList<App> getApps(PackageManager packageManager, Context context, Application application, String iconPackLabelName, AppSorter.SortType sortType, int loadSize) {
+        if (mApps == null) {
+            if (loadSize != -1)
+                return new ArrayList<>(getApps(packageManager, context, application, iconPackLabelName, sortType).subList(0, loadSize));
+            else return getApps(packageManager, context, application, iconPackLabelName, sortType);
+        } else {
+            if (loadSize != -1)
+                return new ArrayList<>(mApps.subList(0, loadSize));
+            else return getApps(packageManager, context, application, iconPackLabelName, sortType);
+        }
+    }
 
     // Get all available apps for launcher
-    public static ArrayList<App> getApps(
-            PackageManager packageManager, Context context, Application application,
-            String iconPackLabelName, AppSorter.SortType sortType) {
+    public static ArrayList<App> getApps(PackageManager packageManager, Context context, Application application, String iconPackLabelName, AppSorter.SortType sortType) {
         ArrayList<App> apps = new ArrayList<>();
         Intent intent = new Intent(Intent.ACTION_MAIN, null);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -64,11 +75,12 @@ public class AppUtil {
                     app.setIcon(selectedIconPack.getIconForPackage(app.getPackageName().toString(), defaultBitmap));
                 else
                     app.setIcon(defaultBitmap);
-				app.setPaletteColor(ColorUtil.getPaletteColorFromApp(app));
+                app.setPaletteColor(ColorUtil.getPaletteColorFromApp(app));
                 apps.add(app);
             }
         }
         AppSorter.sort(apps, sortType);
+        mApps = apps;
         return apps;
     }
 

@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -18,10 +19,14 @@ import java.util.Observer;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import nickrout.lenslauncher.R;
 import nickrout.lenslauncher.model.App;
 import nickrout.lenslauncher.model.AppPersistent;
+import nickrout.lenslauncher.util.AppSorter;
+import nickrout.lenslauncher.util.AppUtil;
 import nickrout.lenslauncher.util.ObservableObject;
+import nickrout.lenslauncher.util.Settings;
 import nickrout.lenslauncher.util.UpdateAppsTask;
 
 /**
@@ -34,8 +39,12 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
     @Bind(R.id.lens_view_apps)
     LensView mLensView;
 
+    @Bind(R.id.home_side_bar)
+    TextView mSideBar;
+
     private PackageManager mPackageManager;
     private MaterialDialog mProgressDialog;
+    private boolean shortcutPage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +60,29 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
         mPackageManager = getPackageManager();
         loadApps(true);
 
+    }
+
+    @OnClick(R.id.home_side_bar)
+    public void onSideBarClick() {
+        if (!shortcutPage) {
+            ArrayList<App> mApps = AppUtil.getApps(mPackageManager, this, getApplication(), new Settings(getApplicationContext()).getString(Settings.KEY_ICON_PACK_LABEL_NAME), AppSorter.SortType.LABEL_ASCENDING, 5);
+            ArrayList<Bitmap> mAppIcons = new ArrayList<>();
+            for (App app : mApps) {
+                mAppIcons.add(app.getIcon());
+            }
+            mLensView.setPackageManager(mPackageManager);
+            mLensView.setApps(mApps, mAppIcons);
+            shortcutPage = true;
+        } else {
+            ArrayList<App> mApps = AppUtil.getApps(mPackageManager, this, getApplication(), new Settings(getApplicationContext()).getString(Settings.KEY_ICON_PACK_LABEL_NAME), AppSorter.SortType.LABEL_ASCENDING, -1);
+            ArrayList<Bitmap> mAppIcons = new ArrayList<>();
+            for (App app : mApps) {
+                mAppIcons.add(app.getIcon());
+            }
+            mLensView.setPackageManager(mPackageManager);
+            mLensView.setApps(mApps, mAppIcons);
+            shortcutPage = false;
+        }
     }
 
     private void loadApps(boolean isLoad) {
