@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -42,7 +44,7 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
 
     private PackageManager mPackageManager;
     private MaterialDialog mProgressDialog;
-    private boolean shortcutPage = false;
+    private boolean shortcutPage = true;
 
     ArrayList<App> mApps;
     ArrayList<Bitmap> mAppIcons;
@@ -60,6 +62,13 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
         ObservableObject.getInstance().addObserver(this);
         mPackageManager = getPackageManager();
         loadApps(true);
+
+//        mSideBar.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//
+//            }
+//        });
 
     }
 

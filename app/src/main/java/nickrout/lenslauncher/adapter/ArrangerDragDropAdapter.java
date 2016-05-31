@@ -221,8 +221,11 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
         private void toggleTray(App app) {
             if (AppTray.isInAppTray(app.getPackageName().toString())) {
                 AppTray.removeFromAppTray(app.getPackageName().toString());
-            } else
+                mTray.setImageResource(R.drawable.ic_fire_grey);
+            } else {
                 AppTray.addToAppTray(app);
+                mTray.setImageResource(R.drawable.ic_fire_red);
+            }
         }
 
         public void printAllPersistent() {
