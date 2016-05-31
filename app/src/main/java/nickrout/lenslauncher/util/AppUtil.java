@@ -24,16 +24,8 @@ public class AppUtil {
     private static final String TAG = AppUtil.class.getSimpleName();
     private static ArrayList<App> mApps;
 
-    public static ArrayList<App> getApps(PackageManager packageManager, Context context, Application application, String iconPackLabelName, AppSorter.SortType sortType, int loadSize) {
-        if (mApps == null) {
-            if (loadSize != -1)
-                return new ArrayList<>(getApps(packageManager, context, application, iconPackLabelName, sortType).subList(0, loadSize));
-            else return getApps(packageManager, context, application, iconPackLabelName, sortType);
-        } else {
-            if (loadSize != -1)
-                return new ArrayList<>(mApps.subList(0, loadSize));
-            else return getApps(packageManager, context, application, iconPackLabelName, sortType);
-        }
+    public static ArrayList<App> getApps() {
+        return mApps;
     }
 
     // Get all available apps for launcher

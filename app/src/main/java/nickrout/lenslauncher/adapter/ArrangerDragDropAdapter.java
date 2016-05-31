@@ -28,6 +28,7 @@ import butterknife.ButterKnife;
 import nickrout.lenslauncher.R;
 import nickrout.lenslauncher.model.App;
 import nickrout.lenslauncher.model.AppPersistent;
+import nickrout.lenslauncher.model.AppTray;
 import nickrout.lenslauncher.util.AppUtil;
 
 /**
@@ -127,6 +128,9 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
         @Bind(R.id.element_app_menu)
         ImageView mMenu;
 
+        @Bind(R.id.element_app_tray)
+        ImageView mTray;
+
         private App mApp;
         private Context mContext;
 
@@ -161,6 +165,10 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
                 mToggleAppVisibility.setVisibility(View.INVISIBLE);
             else
                 mToggleAppVisibility.setVisibility(View.VISIBLE);
+            if (AppTray.isInAppTray(app.getPackageName().toString()))
+                mTray.setImageResource(R.drawable.ic_fire_red);
+            else
+                mTray.setImageResource(R.drawable.ic_fire_grey);
             mContainer.postInvalidate();
         }
 
@@ -198,6 +206,23 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
                     popupMenu.show();
                 }
             });
+
+            mTray.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mApp != null) {
+                        toggleTray(mApp);
+                    } else
+                        Snackbar.make(mContainer, "Error in mTray", Snackbar.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        private void toggleTray(App app) {
+            if (AppTray.isInAppTray(app.getPackageName().toString())) {
+                AppTray.removeFromAppTray(app.getPackageName().toString());
+            } else
+                AppTray.addToAppTray(app);
         }
 
         public void printAllPersistent() {

@@ -23,10 +23,8 @@ import butterknife.OnClick;
 import nickrout.lenslauncher.R;
 import nickrout.lenslauncher.model.App;
 import nickrout.lenslauncher.model.AppPersistent;
-import nickrout.lenslauncher.util.AppSorter;
-import nickrout.lenslauncher.util.AppUtil;
+import nickrout.lenslauncher.model.AppTray;
 import nickrout.lenslauncher.util.ObservableObject;
-import nickrout.lenslauncher.util.Settings;
 import nickrout.lenslauncher.util.UpdateAppsTask;
 
 /**
@@ -45,6 +43,9 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
     private PackageManager mPackageManager;
     private MaterialDialog mProgressDialog;
     private boolean shortcutPage = false;
+
+    ArrayList<App> mApps;
+    ArrayList<Bitmap> mAppIcons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,23 +66,31 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
     @OnClick(R.id.home_side_bar)
     public void onSideBarClick() {
         if (!shortcutPage) {
-            ArrayList<App> mApps = AppUtil.getApps(mPackageManager, this, getApplication(), new Settings(getApplicationContext()).getString(Settings.KEY_ICON_PACK_LABEL_NAME), AppSorter.SortType.LABEL_ASCENDING, 5);
-            ArrayList<Bitmap> mAppIcons = new ArrayList<>();
-            for (App app : mApps) {
-                mAppIcons.add(app.getIcon());
-            }
-            mLensView.setPackageManager(mPackageManager);
-            mLensView.setApps(mApps, mAppIcons);
+            setupAppTray();
             shortcutPage = true;
         } else {
-            ArrayList<App> mApps = AppUtil.getApps(mPackageManager, this, getApplication(), new Settings(getApplicationContext()).getString(Settings.KEY_ICON_PACK_LABEL_NAME), AppSorter.SortType.LABEL_ASCENDING, -1);
-            ArrayList<Bitmap> mAppIcons = new ArrayList<>();
-            for (App app : mApps) {
-                mAppIcons.add(app.getIcon());
+            if (mApps == null) {
+                loadApps(true);
+            } else {
+                mLensView.setApps(this.mApps, this.mAppIcons);
             }
-            mLensView.setPackageManager(mPackageManager);
-            mLensView.setApps(mApps, mAppIcons);
             shortcutPage = false;
+        }
+    }
+
+    private void setupAppTray() {
+        ArrayList<App> appTray = new ArrayList<>();
+        ArrayList<Bitmap> appTrayIcons = new ArrayList<>();
+        if (mApps == null) {
+            loadApps(true);
+        } else {
+            for (App app : mApps) {
+                if (AppTray.isInAppTray(app.getPackageName().toString())) {
+                    appTray.add(app);
+                    appTrayIcons.add(app.getIcon());
+                }
+            }
+            mLensView.setApps(appTray, appTrayIcons);
         }
     }
 
@@ -156,6 +165,13 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
         }
         dismissProgressDialog();
         mLensView.setPackageManager(mPackageManager);
-        mLensView.setApps(mApps, mAppIcons);
+        this.mApps = mApps;
+        this.mAppIcons = mAppIcons;
+
+        if (shortcutPage) {
+            setupAppTray();
+        } else {
+            mLensView.setApps(mApps, mAppIcons);
+        }
     }
 }
