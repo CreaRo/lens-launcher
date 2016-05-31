@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -32,7 +34,7 @@ import nickrout.lenslauncher.util.UpdateAppsTask;
 /**
  * Created by nickrout on 2016/04/02.
  */
-public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTask.UpdateAppsTaskListener {
+public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTask.UpdateAppsTaskListener, GestureDetector.OnGestureListener {
 
     private final static String TAG = "HomeActivity";
 
@@ -45,6 +47,8 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
     private PackageManager mPackageManager;
     private MaterialDialog mProgressDialog;
     private boolean shortcutPage = true;
+
+    private GestureDetector mGestureDetector;
 
     ArrayList<App> mApps;
     ArrayList<Bitmap> mAppIcons;
@@ -63,17 +67,23 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
         mPackageManager = getPackageManager();
         loadApps(true);
 
-//        mSideBar.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//
-//            }
-//        });
+        mGestureDetector = new GestureDetector(this);
+
+        mSideBar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return mGestureDetector.onTouchEvent(event);
+            }
+        });
 
     }
 
     @OnClick(R.id.home_side_bar)
     public void onSideBarClick() {
+        toggleSideBar();
+    }
+
+    private void toggleSideBar() {
         if (!shortcutPage) {
             setupAppTray();
             shortcutPage = true;
@@ -110,6 +120,43 @@ public class HomeActivity extends BaseActivity implements Observer, UpdateAppsTa
     @Override
     public void onBackPressed() {
         // Do Nothing
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return true;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        if (velocityY > 10) {
+            Log.d(TAG, "velY +ve");
+            toggleSideBar();
+        } else if (velocityY < -10) {
+            Log.d(TAG, "velY -ve");
+            toggleSideBar();
+        }
+        return true;
     }
 
     public static class AppsUpdatedReceiver extends BroadcastReceiver {
