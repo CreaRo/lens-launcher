@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -68,6 +69,7 @@ public class SettingsActivity extends BaseActivity implements ColorChooserDialog
         setContentView(R.layout.activity_settings);
         mSettings = new Settings(this);
         setupViews();
+
     }
 
     @Override
@@ -277,8 +279,15 @@ public class SettingsActivity extends BaseActivity implements ColorChooserDialog
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_show_apps:
-                Intent homeIntent = new Intent(SettingsActivity.this, HomeActivity.class);
-                startActivity(homeIntent);
+                if (!FakeLauncherActivity.isMyAppLauncherDefault2(getApplication())) {
+                    Log.d(TAG, "My app is not Default Launcher");
+//                    FakeLauncherActivity.resetPreferredLauncherAndOpenChooser(this);
+                    FakeLauncherActivity.launchAppChooser(this);
+                } else {
+                    Log.d(TAG, "My app is Default Launcher");
+                    Intent homeIntent = new Intent(SettingsActivity.this, HomeActivity.class);
+                    startActivity(homeIntent);
+                }
                 return true;
             case R.id.menu_item_about:
                 Intent aboutIntent = new Intent(SettingsActivity.this, AboutActivity.class);
