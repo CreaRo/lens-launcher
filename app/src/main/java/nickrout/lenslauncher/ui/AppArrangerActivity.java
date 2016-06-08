@@ -4,13 +4,17 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.thesurix.gesturerecycler.GestureAdapter;
+import com.thesurix.gesturerecycler.GestureManager;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -22,7 +26,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import nickrout.lenslauncher.R;
-import nickrout.lenslauncher.adapter.ArrangerDragDropAdapter;
+import nickrout.lenslauncher.adapter.ArrangerDragDropAdapterSwipe;
 import nickrout.lenslauncher.model.App;
 import nickrout.lenslauncher.util.AppSorter;
 import nickrout.lenslauncher.util.AppsSingleton;
@@ -43,7 +47,8 @@ public class AppArrangerActivity extends BaseActivity
 
     private MaterialDialog mProgressDialog;
     private MaterialDialog mSortTypeChooserDialog;
-    private ArrangerDragDropAdapter mArrangerDragDropAdapter;
+    private ArrangerDragDropAdapterSwipe mArrangerDragDropAdapter;
+    private GestureManager mGestureManager;
 
     private Settings mSettings;
 
@@ -138,12 +143,31 @@ public class AppArrangerActivity extends BaseActivity
     }
 
     private void setupRecycler(ArrayList<App> apps) {
-        mArrangerDragDropAdapter = new ArrangerDragDropAdapter(AppArrangerActivity.this, mRecyclerView, apps);
-        mRecyclerView.setAdapter(mArrangerDragDropAdapter);
+        mArrangerDragDropAdapter = new ArrangerDragDropAdapterSwipe(AppArrangerActivity.this, apps);
+        mArrangerDragDropAdapter.setData(apps);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.scrollToPosition(mScrolledItemIndex);
         mScrolledItemIndex = 0;
+        mRecyclerView.setAdapter(mArrangerDragDropAdapter);
+
+        mGestureManager = new GestureManager.Builder(mRecyclerView)
+                .setSwipeEnabled(false)
+                .setLongPressDragEnabled(true)
+                .setGestureFlags(ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, ItemTouchHelper.UP | ItemTouchHelper.DOWN)
+                .build();
+
+        mArrangerDragDropAdapter.setDataChangeListener(new GestureAdapter.OnDataChangeListener<App>() {
+            @Override
+            public void onItemRemoved(App item, int position) {
+                Snackbar.make(mRecyclerView, "Month removed from position " + position, Snackbar.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onItemReorder(App item, int fromPos, int toPos) {
+                Snackbar.make(mRecyclerView, "Month moved from position " + fromPos + " to " + toPos, Snackbar.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void showProgressDialog() {
