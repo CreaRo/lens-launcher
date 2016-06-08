@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import nickrout.lenslauncher.model.App;
 import nickrout.lenslauncher.model.AppPersistent;
@@ -49,26 +50,33 @@ public class UpdateAppsTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... arg0) {
         ArrayList<App> apps = AppUtil.getApps(mPackageManager, mContext, mApplication, mSettings.getString(Settings.KEY_ICON_PACK_LABEL_NAME), mSettings.getSortType());
 
-        App[] appArray = new App[apps.size()];
+        App[] appsArray = new App[apps.size()];
         Bitmap[] appIconsArray = new Bitmap[apps.size()];
 
-        mApps = new ArrayList<>();
-        mAppIcons = new ArrayList<>();
+        int lastAddedIndex = 0;
+
         for (int i = 0; i < apps.size(); i++) {
             App app = apps.get(i);
             Bitmap appIcon = app.getIcon();
             if (appIcon != null) {
                 int appOrderNumber = AppPersistent.getAppOrderNumber(app.getPackageName().toString(), app.getName().toString());
-                appArray[appOrderNumber] = app;
-                appIconsArray[appOrderNumber] = appIcon;
+                if (appOrderNumber != 0) {
+                    appsArray[appOrderNumber] = app;
+                    appIconsArray[appOrderNumber] = appIcon;
+                } else {
+                    while (appsArray[lastAddedIndex] != null) {
+                        lastAddedIndex++;
+                    }
+                    appsArray[lastAddedIndex] = app;
+                    appIconsArray[lastAddedIndex] = appIcon;
+                }
+
             }
         }
 
-        for (int i = 0; i < appArray.length; i++)
-            mApps.add(appArray[i]);
+        mApps = new ArrayList<>(Arrays.asList(appsArray));
 
-        for (int i = 0; i < appIconsArray.length; i++)
-            mAppIcons.add(appIconsArray[i]);
+        mAppIcons = new ArrayList<>(Arrays.asList(appIconsArray));
 
         return null;
     }

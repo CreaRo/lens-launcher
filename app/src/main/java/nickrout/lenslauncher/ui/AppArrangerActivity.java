@@ -204,7 +204,7 @@ public class AppArrangerActivity extends BaseActivity
     }
 
     private void saveToPersistenceAndUpdateHome() {
-        final List<App> appData = mArrangerDragDropAdapter.getData();
+        final List<App> appData = (List<App>) mArrangerDragDropAdapter.getData();
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {

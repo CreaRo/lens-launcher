@@ -24,7 +24,7 @@ public class AppPersistent extends SugarRecord {
     private boolean mAppVisible;
 
     private static boolean DEFAULT_APP_VISIBILITY = true;
-    private static int DEFAULT_ORDER_NUMBER = -1;
+    private static int DEFAULT_ORDER_NUMBER = 0;
     private static long DEFAULT_OPEN_COUNT = 1;
 
     public AppPersistent(String packageName, String name, long openCount, int orderNumber, boolean appVisible) {
