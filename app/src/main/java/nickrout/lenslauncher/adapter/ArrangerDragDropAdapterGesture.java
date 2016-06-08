@@ -20,8 +20,6 @@ import android.widget.Toast;
 import com.thesurix.gesturerecycler.GestureAdapter;
 import com.thesurix.gesturerecycler.GestureViewHolder;
 
-import java.util.ArrayList;
-
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import nickrout.lenslauncher.R;
@@ -32,17 +30,14 @@ import nickrout.lenslauncher.util.AppUtil;
 /**
  * Created by rish on 8/6/16.
  */
-public class ArrangerDragDropAdapterSwipe extends GestureAdapter<App, GestureViewHolder> {
+public class ArrangerDragDropAdapterGesture extends GestureAdapter<App, GestureViewHolder> {
 
     private static final String TAG = "TAG";
 
     private final Context mContext;
-    private ArrayList<App> mApps;
 
-    public ArrangerDragDropAdapterSwipe(final Context context, ArrayList<App> apps) {
+    public ArrangerDragDropAdapterGesture(final Context context) {
         mContext = context;
-        mApps = apps;
-        this.setData(apps);
     }
 
     @Override
@@ -111,19 +106,16 @@ public class ArrangerDragDropAdapterSwipe extends GestureAdapter<App, GestureVie
         @Override
         public void onItemSelect() {
             super.onItemSelect();
-            Snackbar.make(mContainer, "App selected ", Snackbar.LENGTH_LONG).show();
         }
 
         @Nullable
         @Override
         public View getDraggableView() {
-            return mContainer;
+            return mIcon;
         }
 
         public void setAppElement(App app) {
             this.mApp = app;
-            Log.d(TAG, "App is " + app.getPackageName());
-            Log.d(TAG, "App is vis " + (mLabel.getVisibility() == View.VISIBLE));
             mLabel.setText(mApp.getLabel());
             mIcon.setImageBitmap(mApp.getIcon());
             boolean isAppVisible = AppPersistent.getAppVisibility(mApp.getPackageName().toString(), mApp.getName().toString());

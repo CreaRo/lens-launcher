@@ -26,8 +26,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import nickrout.lenslauncher.R;
-import nickrout.lenslauncher.adapter.ArrangerDragDropAdapterSwipe;
+import nickrout.lenslauncher.adapter.ArrangerDragDropAdapterGesture;
 import nickrout.lenslauncher.model.App;
+import nickrout.lenslauncher.model.AppPersistent;
 import nickrout.lenslauncher.util.AppSorter;
 import nickrout.lenslauncher.util.AppsSingleton;
 import nickrout.lenslauncher.util.ObservableObject;
@@ -47,7 +48,7 @@ public class AppArrangerActivity extends BaseActivity
 
     private MaterialDialog mProgressDialog;
     private MaterialDialog mSortTypeChooserDialog;
-    private ArrangerDragDropAdapterSwipe mArrangerDragDropAdapter;
+    private ArrangerDragDropAdapterGesture mArrangerDragDropAdapter;
     private GestureManager mGestureManager;
 
     private Settings mSettings;
@@ -143,12 +144,15 @@ public class AppArrangerActivity extends BaseActivity
     }
 
     private void setupRecycler(ArrayList<App> apps) {
-        mArrangerDragDropAdapter = new ArrangerDragDropAdapterSwipe(AppArrangerActivity.this, apps);
+        mArrangerDragDropAdapter = new ArrangerDragDropAdapterGesture(AppArrangerActivity.this);
         mArrangerDragDropAdapter.setData(apps);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setHasFixedSize(true);
+
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.scrollToPosition(mScrolledItemIndex);
         mScrolledItemIndex = 0;
+
         mRecyclerView.setAdapter(mArrangerDragDropAdapter);
 
         mGestureManager = new GestureManager.Builder(mRecyclerView)
@@ -157,15 +161,16 @@ public class AppArrangerActivity extends BaseActivity
                 .setGestureFlags(ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, ItemTouchHelper.UP | ItemTouchHelper.DOWN)
                 .build();
 
+        mGestureManager.setManualDragEnabled(true);
+
         mArrangerDragDropAdapter.setDataChangeListener(new GestureAdapter.OnDataChangeListener<App>() {
             @Override
             public void onItemRemoved(App item, int position) {
-                Snackbar.make(mRecyclerView, "Month removed from position " + position, Snackbar.LENGTH_SHORT).show();
             }
 
             @Override
             public void onItemReorder(App item, int fromPos, int toPos) {
-                Snackbar.make(mRecyclerView, "Month moved from position " + fromPos + " to " + toPos, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(mRecyclerView, "App moved from position " + fromPos + " to " + toPos, Snackbar.LENGTH_SHORT).show();
             }
         });
     }
@@ -199,17 +204,16 @@ public class AppArrangerActivity extends BaseActivity
     }
 
     private void saveToPersistenceAndUpdateHome() {
-
-//        final List<App> appData = mArrangerDragDropAdapter.getApps();
-//        Thread thread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                for (int i = 0; i < appData.size(); i++)
-//                    AppPersistent.setAppOrderNumber(appData.get(i).getPackageName().toString(), i);
-//            }
-//        });
-//        thread.start();
-//        /* Send broadcast to refresh the app drawer in background. */
+        final List<App> appData = mArrangerDragDropAdapter.getData();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < appData.size(); i++)
+                    AppPersistent.setAppOrderNumber(appData.get(i).getPackageName().toString(), appData.get(i).getName().toString(), i);
+            }
+        });
+        thread.start();
+        /* Send broadcast to refresh the app drawer in background. */
         Intent refreshHomeIntent = new Intent(AppArrangerActivity.this, HomeActivity.AppsUpdatedReceiver.class);
         sendBroadcast(refreshHomeIntent);
     }
@@ -239,4 +243,5 @@ public class AppArrangerActivity extends BaseActivity
     public void update(Observable observable, Object data) {
         loadApps(mMustShowDialog);
     }
+
 }

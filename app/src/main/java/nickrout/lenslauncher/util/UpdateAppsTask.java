@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import java.util.ArrayList;
 
 import nickrout.lenslauncher.model.App;
+import nickrout.lenslauncher.model.AppPersistent;
 
 /**
  * Created by rish on 26/5/16.
@@ -26,10 +27,10 @@ public class UpdateAppsTask extends AsyncTask<Void, Void, Void> {
     private ArrayList<Bitmap> mAppIcons;
 
     public UpdateAppsTask(PackageManager packageManager,
-                           Context context,
-                           Application application,
-                           boolean isLoad,
-                           UpdateAppsTaskListener updateAppsTaskListener) {
+                          Context context,
+                          Application application,
+                          boolean isLoad,
+                          UpdateAppsTaskListener updateAppsTaskListener) {
         this.mPackageManager = packageManager;
         this.mContext = context;
         this.mApplication = application;
@@ -47,16 +48,28 @@ public class UpdateAppsTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... arg0) {
         ArrayList<App> apps = AppUtil.getApps(mPackageManager, mContext, mApplication, mSettings.getString(Settings.KEY_ICON_PACK_LABEL_NAME), mSettings.getSortType());
+
+        App[] appArray = new App[apps.size()];
+        Bitmap[] appIconsArray = new Bitmap[apps.size()];
+
         mApps = new ArrayList<>();
         mAppIcons = new ArrayList<>();
         for (int i = 0; i < apps.size(); i++) {
             App app = apps.get(i);
             Bitmap appIcon = app.getIcon();
             if (appIcon != null) {
-                mApps.add(app);
-                mAppIcons.add(appIcon);
+                int appOrderNumber = AppPersistent.getAppOrderNumber(app.getPackageName().toString(), app.getName().toString());
+                appArray[appOrderNumber] = app;
+                appIconsArray[appOrderNumber] = appIcon;
             }
         }
+
+        for (int i = 0; i < appArray.length; i++)
+            mApps.add(appArray[i]);
+
+        for (int i = 0; i < appIconsArray.length; i++)
+            mAppIcons.add(appIconsArray[i]);
+
         return null;
     }
 
@@ -71,6 +84,7 @@ public class UpdateAppsTask extends AsyncTask<Void, Void, Void> {
 
     public interface UpdateAppsTaskListener {
         void onUpdateAppsTaskPreExecute(boolean isLoad);
+
         void onUpdateAppsTaskPostExecute(ArrayList<App> apps, ArrayList<Bitmap> appIcons);
     }
 }

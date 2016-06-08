@@ -155,4 +155,14 @@ public class AppPersistent extends SugarRecord {
             return 0;
         }
     }
+
+    public static int getAppOrderNumber(String packageName, String name) {
+        String identifier = AppPersistent.generateIdentifier(packageName, name);
+        AppPersistent appPersistent = Select.from(AppPersistent.class).where(Condition.prop(NamingHelper.toSQLNameDefault("mIdentifier")).eq(identifier)).first();
+        if (appPersistent != null) {
+            return appPersistent.getOrderNumber();
+        } else {
+            return 0;
+        }
+    }
 }

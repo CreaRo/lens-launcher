@@ -36,6 +36,11 @@ import nickrout.lenslauncher.util.AppUtil;
  */
 public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAdapter.MainViewHolder> {
 
+    /**
+     * DEPRECATED Adapter
+     * Used com.makeramen.dragsortadapter to implement the recyclerview adapter for list of all apps.
+     */
+
     public static final String TAG = "ArrangerDragDropAdapter";
 
     private final List<App> mApps;
