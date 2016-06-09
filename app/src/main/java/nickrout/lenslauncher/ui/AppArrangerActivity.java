@@ -169,8 +169,16 @@ public class AppArrangerActivity extends BaseActivity
             }
 
             @Override
-            public void onItemReorder(App item, int fromPos, int toPos) {
-                Snackbar.make(mRecyclerView, "App moved from position " + fromPos + " to " + toPos, Snackbar.LENGTH_SHORT).show();
+            public void onItemReorder(final App item, final int fromPos, final int toPos) {
+                Snackbar snackbar = Snackbar.make(mRecyclerView, item.getName() + " moved from position " + fromPos + " to " + toPos, Snackbar.LENGTH_SHORT);
+                snackbar.setAction(getString(R.string.snackbar_undo), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mArrangerDragDropAdapter.undoLast();
+                        Snackbar.make(mRecyclerView, item.getName() + " moved back to position " + fromPos, Snackbar.LENGTH_SHORT);
+                    }
+                });
+                snackbar.show();
             }
         });
     }
