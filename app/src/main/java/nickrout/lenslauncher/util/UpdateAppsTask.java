@@ -21,6 +21,7 @@ public class UpdateAppsTask extends AsyncTask<Void, Void, Void> {
     private Context mContext;
     private Application mApplication;
     private boolean mIsLoad;
+    private boolean mShouldPreserveOrder;
     private UpdateAppsTaskListener mUpdateAppsTaskListener;
 
     private Settings mSettings;
@@ -31,13 +32,15 @@ public class UpdateAppsTask extends AsyncTask<Void, Void, Void> {
                           Context context,
                           Application application,
                           boolean isLoad,
-                          UpdateAppsTaskListener updateAppsTaskListener) {
+                          UpdateAppsTaskListener updateAppsTaskListener,
+                          boolean shouldPreserveOrder) {
         this.mPackageManager = packageManager;
         this.mContext = context;
         this.mApplication = application;
         this.mIsLoad = isLoad;
         this.mSettings = new Settings(context);
         this.mUpdateAppsTaskListener = updateAppsTaskListener;
+        this.mShouldPreserveOrder = shouldPreserveOrder;
     }
 
     @Override
@@ -59,18 +62,22 @@ public class UpdateAppsTask extends AsyncTask<Void, Void, Void> {
             App app = apps.get(i);
             Bitmap appIcon = app.getIcon();
             if (appIcon != null) {
-                int appOrderNumber = AppPersistent.getAppOrderNumber(app.getPackageName().toString(), app.getName().toString());
-                if (appOrderNumber != 0) {
-                    appsArray[appOrderNumber] = app;
-                    appIconsArray[appOrderNumber] = appIcon;
-                } else {
-                    while (appsArray[lastAddedIndex] != null) {
-                        lastAddedIndex++;
+                if (mShouldPreserveOrder) {
+                    int appOrderNumber = AppPersistent.getAppOrderNumber(app.getPackageName().toString(), app.getName().toString());
+                    if (appOrderNumber != 0) {
+                        appsArray[appOrderNumber] = app;
+                        appIconsArray[appOrderNumber] = appIcon;
+                    } else {
+                        while (appsArray[lastAddedIndex] != null) {
+                            lastAddedIndex++;
+                        }
+                        appsArray[lastAddedIndex] = app;
+                        appIconsArray[lastAddedIndex] = appIcon;
                     }
-                    appsArray[lastAddedIndex] = app;
-                    appIconsArray[lastAddedIndex] = appIcon;
+                } else {
+                    appsArray[i] = app;
+                    appIconsArray[i] = appIcon;
                 }
-
             }
         }
 

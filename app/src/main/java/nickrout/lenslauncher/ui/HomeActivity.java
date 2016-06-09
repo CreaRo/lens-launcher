@@ -52,12 +52,12 @@ public class HomeActivity extends BaseActivity
 
         ObservableObject.getInstance().addObserver(this);
         mPackageManager = getPackageManager();
-        loadApps(true);
+        loadApps(true, true);
 
     }
 
-    private void loadApps(boolean isLoad) {
-        new UpdateAppsTask(mPackageManager, getApplicationContext(), getApplication(), isLoad, HomeActivity.this).execute();
+    private void loadApps(boolean isLoad, boolean shouldPreserveOrder) {
+        new UpdateAppsTask(mPackageManager, getApplicationContext(), getApplication(), isLoad, HomeActivity.this, shouldPreserveOrder).execute();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class HomeActivity extends BaseActivity
 
     @Override
     public void update(Observable observable, Object data) {
-        loadApps(false);
+        loadApps(false, true);
     }
 
     @Override

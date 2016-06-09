@@ -65,11 +65,11 @@ public class AppArrangerActivity extends BaseActivity
         setUpViews();
         ArrayList<App> apps = AppsSingleton.getInstance().getApps();
         if (apps == null) {
-            loadApps(true);
+            loadApps(true, true);
         } else {
             setupRecycler(apps);
             if (AppsSingleton.getInstance().doesNeedUpdate()) {
-                loadApps(false);
+                loadApps(false, true);
             }
         }
         ObservableObject.getInstance().addObserver(this);
@@ -121,8 +121,8 @@ public class AppArrangerActivity extends BaseActivity
 
     }
 
-    private void loadApps(boolean isLoad) {
-        new UpdateAppsTask(getPackageManager(), getApplicationContext(), getApplication(), isLoad, AppArrangerActivity.this).execute();
+    private void loadApps(boolean isLoad, boolean shouldPreserveOrder) {
+        new UpdateAppsTask(getPackageManager(), getApplicationContext(), getApplication(), isLoad, AppArrangerActivity.this, shouldPreserveOrder).execute();
     }
 
     @Override
@@ -170,12 +170,12 @@ public class AppArrangerActivity extends BaseActivity
 
             @Override
             public void onItemReorder(final App item, final int fromPos, final int toPos) {
-                Snackbar snackbar = Snackbar.make(mRecyclerView, item.getName() + " moved from position " + fromPos + " to " + toPos, Snackbar.LENGTH_SHORT);
+                Snackbar snackbar = Snackbar.make(mRecyclerView, item.getLabel() + " moved", Snackbar.LENGTH_SHORT);
                 snackbar.setAction(getString(R.string.snackbar_undo), new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         mArrangerDragDropAdapter.undoLast();
-                        Snackbar.make(mRecyclerView, item.getName() + " moved back to position " + fromPos, Snackbar.LENGTH_SHORT);
+                        Snackbar.make(mRecyclerView, item.getLabel() + " moved back to position " + fromPos, Snackbar.LENGTH_SHORT);
                     }
                 });
                 snackbar.show();
@@ -249,7 +249,6 @@ public class AppArrangerActivity extends BaseActivity
 
     @Override
     public void update(Observable observable, Object data) {
-        loadApps(mMustShowDialog);
+        loadApps(mMustShowDialog, false);
     }
-
 }
