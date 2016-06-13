@@ -3,13 +3,11 @@ package nickrout.lenslauncher.adapter;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -19,10 +17,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.makeramen.dragsortadapter.DragSortAdapter;
-import com.makeramen.dragsortadapter.NoForegroundShadowBuilder;
-
-import java.util.List;
+import com.thesurix.gesturerecycler.GestureAdapter;
+import com.thesurix.gesturerecycler.GestureViewHolder;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -30,90 +26,42 @@ import nickrout.lenslauncher.R;
 import nickrout.lenslauncher.model.App;
 import nickrout.lenslauncher.model.AppPersistent;
 import nickrout.lenslauncher.util.AppUtil;
-import nickrout.lenslauncher.util.AppsSingleton;
 
 /**
- * Created by rish on 26/5/16.
+ * Created by rish on 8/6/16.
  */
-public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAdapter.MainViewHolder> {
+public class ArrangerDragDropAdapter extends GestureAdapter<App, GestureViewHolder> {
 
-    public static final String TAG = "ArrangerDragDropAdapter";
+    private static final String TAG = "TAG";
+    private final Context mContext;
 
-    private final List<App> mApps;
-    private RecyclerView mRecyclerView;
-    private Context mContext;
-
-    public ArrangerDragDropAdapter(Context mContext, RecyclerView recyclerView, List<App> mApps) {
-        super(recyclerView);
-        this.mContext = mContext;
-        this.mApps = mApps;
-        this.mRecyclerView = recyclerView;
-    }
-
-    public App getItemForPosition(int position) {
-        return mApps.get(position);
+    public ArrangerDragDropAdapter(final Context context) {
+        mContext = context;
     }
 
     @Override
-    public long getItemId(int position) {
-        return mApps.get(position).getID();
-    }
-
-    @Override
-    public int getPositionForId(long id) {
-        for (int i = 0; i < mApps.size(); i++)
-            if (mApps.get(i).getID() == ((int) id))
-                return i;
-        return -1;
-    }
-
-    @Override
-    public boolean move(int fromPosition, int toPosition) {
-        mApps.add(toPosition, mApps.remove(fromPosition));
-        return true;
-    }
-
-    @Override
-    public MainViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.recycler_item_app_arranger, parent, false);
-        final MainViewHolder holder = new MainViewHolder(mContext, ArrangerDragDropAdapter.this, view);
-        //view.setOnLongClickListener(holder);
+    public GestureViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        final View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_item_app_arranger, parent, false);
+        final AppViewHolder holder = new AppViewHolder(itemView, mContext);
         holder.setOnClickListeners();
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(final MainViewHolder holder, final int position) {
-        App app = getItemForPosition(position);
+    public void onBindViewHolder(final GestureViewHolder holder, final int position) {
+        super.onBindViewHolder(holder, position);
+        final App app = getData().get(position);
 
-        // NOTE: check for getDraggingId() match to set an "invisible space" while dragging
-        holder.mContainer.setVisibility(getDraggingId() == getPositionForId(position) ? View.INVISIBLE : View.VISIBLE);
-        holder.mContainer.postInvalidate();
-
-        holder.setAppElement(app);
-    }
-
-    @Override
-    public long getDraggingId() {
-        return super.getDraggingId();
+        final AppViewHolder appHolder = (AppViewHolder) holder;
+        appHolder.setAppElement(app);
     }
 
     @Override
     public int getItemCount() {
-        return mApps.size();
+        return getData().size();
     }
 
-    @Override
-    public void onDrop() {
-        super.onDrop();
-    }
-
-    public List<App> getApps() {
-        return mApps;
-    }
-
-    public static class MainViewHolder extends DragSortAdapter.ViewHolder implements View.OnLongClickListener, PopupMenu.OnMenuItemClickListener {
+    public class AppViewHolder extends GestureViewHolder implements PopupMenu.OnMenuItemClickListener {
 
         @Bind(R.id.element_app_container)
         CardView mContainer;
@@ -133,29 +81,43 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
         private App mApp;
         private Context mContext;
 
-        public MainViewHolder(Context context, final ArrangerDragDropAdapter adapter, View itemView) {
-            super(adapter, itemView);
-            ButterKnife.bind(this, itemView);
-            this.mContext = context;
+        public AppViewHolder(final View view, Context context) {
+            super(view);
+            ButterKnife.bind(this, view);
+            mContext = context;
         }
 
         @Override
-        public boolean onLongClick(@NonNull View v) {
-            //startDrag();
+        public boolean canDrag() {
             return true;
         }
 
         @Override
-        public View.DragShadowBuilder getShadowBuilder(View itemView, Point touchPoint) {
-            return new NoForegroundShadowBuilder(itemView, touchPoint);
+        public boolean canSwipe() {
+            return false;
+        }
+
+        @Override
+        public void onItemClear() {
+            super.onItemClear();
+        }
+
+        @Override
+        public void onItemSelect() {
+            super.onItemSelect();
+        }
+
+        @Nullable
+        @Override
+        public View getDraggableView() {
+            return mIcon;
         }
 
         public void setAppElement(App app) {
             this.mApp = app;
             mLabel.setText(mApp.getLabel());
             mIcon.setImageBitmap(mApp.getIcon());
-            boolean isAppVisible =
-                    AppPersistent.getAppVisibility(mApp.getPackageName().toString(), mApp.getName().toString());
+            boolean isAppVisible = AppPersistent.getAppVisibility(mApp.getPackageName().toString(), mApp.getName().toString());
             if (isAppVisible) {
                 mToggleAppVisibility.setImageResource(R.drawable.ic_visibility_grey_24dp);
             } else {
@@ -170,8 +132,7 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
 
         public void toggleAppVisibility(App app) {
             this.mApp = app;
-            boolean isAppVisible =
-                    AppPersistent.getAppVisibility(mApp.getPackageName().toString(), mApp.getName().toString());
+            boolean isAppVisible = AppPersistent.getAppVisibility(mApp.getPackageName().toString(), mApp.getName().toString());
             AppPersistent.setAppVisibility(
                     mApp.getPackageName().toString(),
                     mApp.getName().toString(),
@@ -189,12 +150,10 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
             mToggleAppVisibility.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mApp != null) {
+                    if (mApp != null)
                         toggleAppVisibility(mApp);
-                        AppsSingleton.getInstance().setNeedsUpdate(true);
-                    } else {
+                    else
                         Snackbar.make(mContainer, mContext.getString(R.string.error_app_not_found), Snackbar.LENGTH_LONG).show();
-                    }
                     printAllPersistent();
                 }
             });
@@ -203,12 +162,8 @@ public class ArrangerDragDropAdapter extends DragSortAdapter<ArrangerDragDropAda
                 @Override
                 public void onClick(View view) {
                     PopupMenu popupMenu = new PopupMenu(mContext, view);
-                    popupMenu.setOnMenuItemClickListener(MainViewHolder.this);
-                    if (mApp.getPackageName().equals("nickrout.lenslauncher")) {
-                        popupMenu.inflate(R.menu.menu_app_lens_launcher);
-                    } else {
-                        popupMenu.inflate(R.menu.menu_app);
-                    }
+                    popupMenu.setOnMenuItemClickListener(AppViewHolder.this);
+                    popupMenu.inflate(R.menu.menu_app);
                     popupMenu.show();
                 }
             });
