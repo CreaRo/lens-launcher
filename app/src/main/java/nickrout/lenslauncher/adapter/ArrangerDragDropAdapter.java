@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.thesurix.gesturerecycler.GestureAdapter;
+import com.thesurix.gesturerecycler.GestureManager;
 import com.thesurix.gesturerecycler.GestureViewHolder;
 
 import butterknife.Bind;
@@ -34,6 +35,7 @@ public class ArrangerDragDropAdapter extends GestureAdapter<App, GestureViewHold
 
     private static final String TAG = "TAG";
     private final Context mContext;
+    private GestureManager mGestureManager;
 
     public ArrangerDragDropAdapter(final Context context) {
         mContext = context;

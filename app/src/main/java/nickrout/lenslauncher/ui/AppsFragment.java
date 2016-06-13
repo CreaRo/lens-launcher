@@ -83,14 +83,16 @@ public class AppsFragment extends Fragment implements SettingsActivity.AppsInter
         }
         mProgress.setVisibility(View.INVISIBLE);
         mRecycler.setVisibility(View.VISIBLE);
-        mAdapter = new ArrangerDragDropAdapter(getActivity());
-        mAdapter.setData(apps);
-        mRecycler.setAdapter(mAdapter);
+
         mRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecycler.setItemAnimator(new DefaultItemAnimator());
         mRecycler.setHasFixedSize(true);
         mRecycler.scrollToPosition(mScrolledItemIndex);
         mScrolledItemIndex = 0;
+
+        mAdapter = new ArrangerDragDropAdapter(getActivity());
+        mAdapter.setData(apps);
+        mRecycler.setAdapter(mAdapter);
 
         mGestureManager = new GestureManager.Builder(mRecycler)
                 .setSwipeEnabled(false)
@@ -109,6 +111,7 @@ public class AppsFragment extends Fragment implements SettingsActivity.AppsInter
             @Override
             public void onItemReorder(App item, int fromPos, int toPos) {
                 Snackbar.make(mRecycler, "App moved from " + fromPos + " " + toPos, Snackbar.LENGTH_LONG).show();
+                mGestureManager.setManualDragEnabled(true);
             }
         });
     }
